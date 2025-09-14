@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habitoo - Habit Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 520px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #007bff;
+      font-size: 2em;
+    }
+    p.tagline {
+      text-align: center;
+      color: #555;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+    .habit-input {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .habit-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px 0 0 5px;
+    }
+    .habit-input button {
+      padding: 10px 15px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .habit-input button:hover {
+      background: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    .progress {
+      font-size: 0.9em;
+      color: #333;
+      font-weight: bold;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌱 Welcome to Habitoo</h1>
+    <p class="tagline">Build better habits, one step at a time.</p>
+
+    <div class="habit-input">
+      <input type="text" id="habitInput" placeholder="Enter a habit...">
+      <button id="addHabit">Add Habit</button>
+    </div>
+    
+    <table id="habitTable">
+      <thead>
+        <tr>
+          <th>Habit</th>
+          <th>Mon</th>
+          <th>Tue</th>
+          <th>Wed</th>
+          <th>Thu</th>
+          <th>Fri</th>
+          <th>Sat</th>
+          <th>Sun</th>
+          <th>Progress</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const habitInput = document.getElementById("habitInput");
+    const addHabitBtn = document.getElementById("addHabit");
+    const habitTableBody = document.querySelector("#habitTable tbody");
+
+    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+
+    // Render habits
+    function renderHabits() {
+      habitTableBody.innerHTML = "";
+      habits.forEach((habit, index) => {
+        const row = document.createElement("tr");
+
+        // Habit name
+        const habitNameCell = document.createElement("td");
+        habitNameCell.textContent = habit.name;
+        row.appendChild(habitNameCell);
+
+        // Days checkboxes
+        let completedCount = 0;
+        habit.days.forEach((done, dayIndex) => {
+          const dayCell = document.createElement("td");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = done;
+
+          checkbox.addEventListener("change", () => {
+            habits[index].days[dayIndex] = checkbox.checked;
+            saveHabits();
+            renderHabits();
+          });
+
+          if (done) completedCount++;
+          dayCell.appendChild(checkbox);
+          row.appendChild(dayCell);
+        });
+
+        // Progress
+        const progressCell = document.createElement("td");
+        const percentage = Math.round((completedCount / 7) * 100);
+        progressCell.textContent = percentage + "%";
+        progressCell.classList.add("progress");
+        row.appendChild(progressCell);
+
+        habitTableBody.appendChild(row);
+      });
+    }
+
+    // Save to localStorage
+    function saveHabits() {
+      localStorage.setItem("habits", JSON.stringify(habits));
+    }
+
+    // Add habit
+    addHabitBtn.addEventListener("click", () => {
+      const habitName = habitInput.value.trim();
+      if (habitName) {
+        habits.push({ name: habitName, days: [false, false, false, false, false, false, false] });
+        saveHabits();
+        renderHabits();
+        habitInput.value = "";
+      }
+    });
+
+    // Initial render
+    renderHabits();
+  </script>
+</body>
+</html>
